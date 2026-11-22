@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#17231d"><link rel="manifest" href="manifest.webmanifest">
+<title>Mi recomposición</title>
+<style>
+:root{--bg:#f3f5f2;--card:#fff;--ink:#18231d;--muted:#68756d;--line:#e0e7e1;--accent:#285c43;--soft:#e9f1eb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:#17231d;color:white;padding:18px 15px 10px;position:sticky;top:0;z-index:5}header h1{font-size:21px;margin:0}header p{margin:2px 0 0;color:#c8d4cb;font-size:12px}
+nav{display:flex;gap:7px;overflow:auto;padding:12px 0 3px}nav button{white-space:nowrap;border:1px solid #536258;background:transparent;color:#e2e9e3;border-radius:20px;padding:8px 12px;font-weight:650}nav button.active{background:#dcebe0;color:#17231d;border-color:#dcebe0}
+main{max-width:780px;margin:auto;padding:14px 12px 80px}section{display:none}section.active{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:15px;margin-bottom:13px;box-shadow:0 2px 8px #15251a08}
+h2{font-size:17px;margin:0 0 10px}h3{font-size:14px;margin:14px 0 7px}
+label{display:block;font-size:12px;font-weight:700;color:#46534a;margin:9px 0 4px}
+input,textarea,select{width:100%;border:1px solid #cbd6cd;border-radius:9px;padding:10px;font:inherit;background:#fff;color:var(--ink)}textarea{min-height:68px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+button.primary,.primary{border:0;background:var(--accent);color:#fff;border-radius:10px;padding:11px 14px;font-weight:700}
+button.secondary{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:10px;padding:10px 12px;font-weight:650}
+button.danger{background:#fff0f0;color:#963737;border:1px solid #f0d0d0;border-radius:9px;padding:7px 10px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.muted,small{color:var(--muted);font-size:12px}
+.stat{background:var(--soft);padding:11px;border-radius:11px}.stat b{display:block;font-size:20px}.stat span{font-size:11px;color:var(--muted)}
+.item{border-top:1px solid var(--line);padding:11px 0}.item:first-child{border-top:0}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.photo-grid img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:9px;background:#eee}
+.photo-card{position:relative}.photo-card button{position:absolute;right:4px;top:4px;background:white;border:0;border-radius:8px}
+.badge{display:inline-block;background:var(--soft);color:var(--accent);border-radius:20px;padding:3px 8px;font-size:11px;font-weight:700}
+.notice{background:#fff8e7;border:1px solid #f0e0b7;border-radius:10px;padding:10px;font-size:12px}
+hr{border:0;border-top:1px solid var(--line);margin:13px 0}
+.checkrow{display:flex;align-items:center;gap:8px}.checkrow input{width:auto}
+#trendChart{width:100%;height:190px;background:#fafcf9;border-radius:10px}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:12px}
+@media(min-width:600px){.grid{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<header><h1>Mi recomposición</h1><p>Registro diario · fotos · alimentación · entrenamiento · evolución</p>
+<nav>
+<button class="active" data-tab="hoy">Hoy</button><button data-tab="historial">Historial</button><button data-tab="fotos">Fotos</button><button data-tab="progreso">Progreso</button><button data-tab="medidas">Medidas</button><button data-tab="compartir">Compartir</button>
+</nav></header>
+<main>
+<section id="hoy" class="active">
+<div class="card">
+<h2>Registro diario</h2>
+<label>Fecha</label><input type="date" id="date">
+<div class="row"><div><label>Peso (kg) — opcional</label><input id="weight" type="number" step=".1" placeholder="Sin balanza, dejar vacío"></div><div><label>Agua (litros)</label><input id="water" type="number" step=".1" placeholder="Ej. 2,0"></div></div>
+<h3>Proteína y creatina por scoop</h3>
+<div class="row">
+<div><label>Whey — cantidad de scoops</label><select id="wheyScoops"><option value="0">0</option><option value=".5">0,5</option><option value="1">1</option><option value="1.5" selected>1,5</option><option value="2">2</option><option value="2.5">2,5</option><option value="3">3</option></select></div>
+<div><label>Creatina — cantidad de scoops</label><select id="creatineScoops"><option value="0">0</option><option value=".5">0,5</option><option value="1" selected>1</option><option value="1.5">1,5</option><option value="2">2</option></select></div>
+</div>
+<p class="muted">La app registra scoops, no gramos. La proteína estimada se calcula usando la etiqueta informada: 24 g por porción de 30 g, suponiendo que 1 scoop equivale a 30 g. Confirmaremos el tamaño real del scoop.</p>
+<div class="stat"><b id="wheyEstimate">36 g</b><span>Proteína estimada desde whey (no incluye alimentos)</span></div>
+<h3>Ejercicios del día</h3>
+<div class="row">
+<div><label>Flexiones — series</label><input id="pushSets" type="number" min="0" step="1" placeholder="Ej. 4"></div>
+<div><label>Flexiones — repeticiones por serie</label><input id="pushReps" type="number" min="0" step="1" placeholder="Ej. 25"></div>
+<div><label>Hipopresivos — series</label><input id="hypoSets" type="number" min="0" step="1" placeholder="Ej. 3"></div>
+<div><label>Hipopresivos — duración por serie (seg)</label><input id="hypoSecs" type="number" min="0" step="1" placeholder="Ej. 20"></div>
+</div>
+<h3>Soga invisible / salto simulado</h3>
+<div class="row">
+<div><label>Intensidad</label><select id="ropeIntensity"><option value="">No hice</option><option>Leve — como subir escaleras</option><option>Fuerte — saltos con ambos pies</option><option>Mixta</option></select></div>
+<div><label>Series</label><input id="ropeSets" type="number" min="0" step="1" placeholder="Ej. 5"></div>
+<div><label>Minutos por serie</label><input id="ropeMinutes" type="number" min="0" step=".5" placeholder="Ej. 1"></div>
+</div>
+<label>Otros ejercicios / fútbol / caminata</label><textarea id="otherExercise" placeholder="Ej. sentadillas, remo, fútbol, caminata, duración..."></textarea>
+<h3>Alimentación del día</h3>
+<p class="muted">Podés cargar cada comida a ojo, sin balanza. Describí porciones visuales y preparación; yo podré estimar cantidades, calorías y nutrientes al revisar el registro y las fotos.</p>
+<label>Desayuno</label><textarea id="breakfast" placeholder="Ej. yogur casero, banana, cucharadas de chía..."></textarea>
+<label>Almuerzo</label><textarea id="lunch" placeholder="Ej. plato de soja texturizada con arroz, tamaño del plato..."></textarea>
+<label>Merienda</label><textarea id="snack" placeholder="Qué comiste y cantidad aproximada..."></textarea>
+<label>Cena</label><textarea id="dinner" placeholder="Qué comiste y cantidad aproximada..."></textarea>
+<label>Extras / picoteos / bebidas</label><textarea id="extras" placeholder="Galletitas, aceite, aderezos, bebidas, etc."></textarea>
+<label>Observaciones de porciones y preparación</label><textarea id="foodNotes" placeholder="Ej. 1 plato hondo, 1 taza, 2 puñados, soja hidratada/seca, aceite usado..."></textarea>
+<h3>Fotos de comidas</h3>
+<label>Agregar foto de comida (podés cargar varias)</label><input id="mealPhotos" type="file" accept="image/*" multiple capture="environment">
+<div class="muted" id="mealPhotoCount">No hay fotos seleccionadas.</div>
+<h3>Estado del día</h3>
+<label>Sensaciones, sueño, hambre, molestias</label><textarea id="notes" placeholder="Cómo te sentiste y cómo recuperaste..."></textarea>
+<div class="actions"><button class="primary" id="saveDay">Guardar día</button><button class="secondary" id="clearDay">Limpiar campos</button></div>
+<small>Podés guardar una entrada por fecha; si volvés a guardar esa fecha, se reemplaza el registro anterior.</small>
+</div>
+<div class="card"><h2>Punto de partida</h2><div class="grid">
+<div class="stat"><b>73 kg*</b><span>Último peso conocido</span></div><div class="stat"><b>94 cm</b><span>Cintura ombligo</span></div><div class="stat"><b>29 / 32,5</b><span>Bíceps relajado/contraído</span></div><div class="stat"><b>100 cm</b><span>Pecho</span></div></div>
+<p class="muted">Inicio: 22/11/2026 · 26 años · 1,70 m · cadera 89 cm · muslos 54 cm. *73 kg fue medido aproximadamente dos semanas antes. No hay balanza actualmente; no se asumirá un peso nuevo.</p></div>
+</section>
+
+<section id="historial"><div class="card"><h2>Historial diario</h2><div id="dayList" class="muted">Todavía no hay registros.</div></div></section>
+
+<section id="fotos">
+<div class="card"><h2>Fotos de progreso físico</h2><p class="muted">Subí fotos tuyas de frente, perfil y espalda para comparar fechas.</p>
+<label>Fecha</label><input type="date" id="photoDate"><label>Vista</label><select id="photoType"><option>Frente</option><option>Perfil</option><option>Espalda</option><option>Otra</option></select>
+<label>Tomar o elegir foto</label><input id="photoInput" type="file" accept="image/*" capture="environment">
+<button class="primary" id="savePhoto">Guardar foto física</button></div>
+<div class="card"><h2>Galería física</h2><div id="photoGallery" class="photo-grid"></div></div>
+<div class="card"><h2>Fotos de comidas guardadas</h2><div id="mealGallery" class="photo-grid"></div></div>
+</section>
+
+<section id="progreso">
+<div class="card"><h2>Comparador evolutivo de fotos</h2>
+<div class="row"><div><label>Fecha inicial</label><select id="compareA"></select></div><div><label>Fecha final</label><select id="compareB"></select></div></div>
+<label>Vista</label><select id="compareType"><option>Frente</option><option>Perfil</option><option>Espalda</option><option>Otra</option></select>
+<div class="grid" style="margin-top:10px"><div><b id="compareLabelA" class="muted">Inicio</b><img id="compareImgA" style="width:100%;aspect-ratio:3/4;object-fit:contain;background:#eef1ee;border-radius:10px" alt="Foto inicial"></div><div><b id="compareLabelB" class="muted">Actual</b><img id="compareImgB" style="width:100%;aspect-ratio:3/4;object-fit:contain;background:#eef1ee;border-radius:10px" alt="Foto actual"></div></div><p id="compareMessage" class="muted">Guardá fotos en distintas fechas para compararlas.</p></div>
+<div class="card"><h2>Gráfico de medidas</h2><label>Indicador</label><select id="metric"><option value="waist">Cintura</option><option value="armFlex">Bíceps contraído</option><option value="armRelax">Bíceps relajado</option><option value="chest">Pecho</option><option value="hip">Cadera</option><option value="thigh">Muslos</option><option value="weight">Peso</option></select><svg id="chart" viewBox="0 0 600 220" width="100%" role="img" aria-label="Gráfico de evolución"></svg><div id="chartText" class="muted"></div></div>
+<div class="card"><h2>Proyección orientativa</h2><p class="muted">Proyección matemática simple a partir de las mediciones ingresadas. No predice resultados fisiológicos ni reemplaza el análisis. Se habilita con al menos 3 mediciones fechadas del mismo indicador.</p><label>Horizonte</label><select id="horizon"><option value="30">30 días</option><option value="60">60 días</option><option value="90" selected>90 días</option></select><div id="projection" class="notice">Todavía no hay suficientes mediciones para proyectar.</div></div>
+<div class="card"><h2>Constancia de seguimiento</h2><div class="grid"><div class="stat"><b id="daysCount">0</b><span>Días registrados</span></div><div class="stat"><b id="avgProtein">—</b><span>Whey estimada (g/día)</span></div><div class="stat"><b id="creatineCount">0</b><span>Días con creatina cargada</span></div><div class="stat"><b id="exerciseCount">0</b><span>Días con ejercicio</span></div></div></div>
+</section>
+
+<section id="medidas">
+<div class="card"><h2>Nueva medición corporal</h2><label>Fecha</label><input type="date" id="measureDate">
+<div class="row"><div><label>Peso (kg) opcional</label><input id="mWeight" type="number" step=".1" placeholder="Dejar vacío si no hay balanza"></div><div><label>Bíceps relajado (cm)</label><input id="mArmRelax" type="number" step=".1"></div><div><label>Bíceps contraído (cm)</label><input id="mArmFlex" type="number" step=".1"></div><div><label>Pecho (cm)</label><input id="mChest" type="number" step=".1"></div><div><label>Cintura ombligo (cm)</label><input id="mWaist" type="number" step=".1"></div><div><label>Cadera (cm)</label><input id="mHip" type="number" step=".1"></div><div><label>Muslos (cm)</label><input id="mThigh" type="number" step=".1"></div></div>
+<label>Observaciones</label><textarea id="mNotes" placeholder="Misma hora, postura y técnica de medición..."></textarea><button class="primary" id="saveMeasure">Guardar medición</button></div>
+<div class="card"><h2>Historial de medidas</h2><div id="measureList" class="muted">Todavía no hay mediciones nuevas.</div></div></section>
+
+<section id="compartir"><div class="card"><h2>Exportar y compartir</h2><p>La copia completa incluye registros, mediciones, fotos físicas y fotos de comida. Adjuntá el JSON en ChatGPT para que pueda analizar las imágenes y el historial.</p>
+<div class="actions"><button class="primary" id="exportJson">Exportar copia completa (JSON + fotos)</button><button class="secondary" id="exportCsv">Exportar registros (CSV)</button></div>
+<label>Restaurar copia JSON</label><input type="file" id="importFile" accept="application/json"><button class="secondary" id="importJson">Importar copia</button>
+<hr><h3>Resumen para copiar en ChatGPT</h3><textarea id="shareText" readonly></textarea><div class="actions"><button class="secondary" id="makeSummary">Generar resumen</button><button class="secondary" id="copySummary">Copiar resumen</button></div>
+<div class="notice">Privacidad: todo queda en este dispositivo/navegador. Exportá copias periódicas; si borrás datos del sitio o cambiás de teléfono, podés perderlos. El JSON con fotos puede ser pesado. Las estimaciones de comida se harán luego a partir de las descripciones y fotos; la app no inventa gramos ni calorías.</div></div></section>
+<footer>Mi recomposición · Registro local privado · 22/11/2026</footer>
+</main>
+<script>
+const DB='recompDBv2';let db;const $=id=>document.getElementById(id),today=()=>new Date().toLocaleDateString('en-CA');
+const fields=['weight','water','wheyScoops','creatineScoops','pushSets','pushReps','hypoSets','hypoSecs','ropeIntensity','ropeSets','ropeMinutes','otherExercise','breakfast','lunch','snack','dinner','extras','foodNotes','notes'];
+function days(){return JSON.parse(localStorage.getItem('daysV2')||'[]')}function putDays(x){localStorage.setItem('daysV2',JSON.stringify(x))}
+function measures(){return JSON.parse(localStorage.getItem('measuresV2')||'[]')}function putMeasures(x){localStorage.setItem('measuresV2',JSON.stringify(x))}
+function openDB(){return new Promise((ok,no)=>{let r=indexedDB.open(DB,1);r.onupgradeneeded=()=>{let d=r.result;for(let s of ['bodyPhotos','mealPhotos'])if(!d.objectStoreNames.contains(s))d.createObjectStore(s,{keyPath:'id',autoIncrement:true})};r.onsuccess=()=>{db=r.result;ok()};r.onerror=()=>no(r.error)})}
+function txAll(store){return new Promise(resolve=>{let r=db.transaction(store,'readonly').objectStore(store).getAll();r.onsuccess=()=>resolve(r.result)})}
+function saveBlob(store,obj){return new Promise((resolve,reject)=>{let t=db.transaction(store,'readwrite');t.objectStore(store).add(obj);t.oncomplete=resolve;t.onerror=()=>reject(t.error)})}
+function download(name,blob){let a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1500)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function v(id){return $(id).value}
+function estimateWhey(){let n=Number(v('wheyScoops')||0);$('wheyEstimate').textContent=(n*24).toLocaleString('es-AR',{maximumFractionDigits:1})+' g'}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('main section').forEach(s=>s.classList.toggle('active',s.id===b.dataset.tab));if(b.dataset.tab==='historial')renderDays();if(b.dataset.tab==='fotos')renderPhotos();if(b.dataset.tab==='medidas')renderMeasures();if(b.dataset.tab==='progreso')renderProgress()});
+['date','photoDate','measureDate'].forEach(id=>$(id).value=today());$('wheyScoops').onchange=estimateWhey;estimateWhey();
+$('mealPhotos').onchange=()=>$('mealPhotoCount').textContent=$('mealPhotos').files.length?`${$('mealPhotos').files.length} foto(s) seleccionada(s). Se guardarán al guardar el día.`:'No hay fotos seleccionadas.';
+async function compress(file){return new Promise(resolve=>{let im=new Image(),url=URL.createObjectURL(file);im.onload=()=>{let scale=Math.min(1,1400/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=im.width*scale;c.height=im.height*scale;c.getContext('2d').drawImage(im,0,0,c.width,c.height);c.toBlob(b=>{URL.revokeObjectURL(url);resolve(b||file)},'image/jpeg',.82)};im.onerror=()=>resolve(file);im.src=url})}
+$('saveDay').onclick=async()=>{let d={date:v('date')};fields.forEach(k=>d[k]=v(k));d.wheyProteinEstimate=Number(d.wheyScoops||0)*24;let a=days().filter(x=>x.date!==d.date);a.push(d);a.sort((x,y)=>y.date.localeCompare(x.date));putDays(a);let fs=[...$('mealPhotos').files];for(let f of fs)await saveBlob('mealPhotos',{date:d.date,blob:await compress(f),name:f.name});$('mealPhotos').value='';$('mealPhotoCount').textContent='No hay fotos seleccionadas.';alert('Día y fotos guardados en este dispositivo.')};
+$('clearDay').onclick=()=>{fields.forEach(k=>{if($(k).tagName==='SELECT')$(k).selectedIndex=0;else $(k).value=''});$('wheyScoops').value='1.5';$('creatineScoops').value='1';estimateWhey()};
+function renderDays(){let a=days();$('dayList').innerHTML=a.length?a.map(d=>`<div class="item"><b>${d.date}</b><p>Agua: ${d.water||'—'} L · Whey: ${d.wheyScoops||0} scoops (${d.wheyProteinEstimate||0} g estimados) · Creatina: ${d.creatineScoops||0} scoops</p><p>Flexiones: ${d.pushSets||0}×${d.pushReps||0} · Hipopresivos: ${d.hypoSets||0}×${d.hypoSecs||0} seg · Salto: ${esc(d.ropeIntensity||'—')} ${d.ropeSets||0}×${d.ropeMinutes||0} min</p><p>Comidas: ${['breakfast','lunch','snack','dinner','extras'].map(k=>d[k]?esc(d[k]):'').filter(Boolean).join(' · ')||'—'}</p><button class="danger" onclick="deleteDay('${d.date}')">Eliminar</button></div>`).join(''):'Todavía no hay registros.'}
+window.deleteDay=date=>{if(confirm('¿Eliminar registro?')){putDays(days().filter(x=>x.date!==date));renderDays()}};
+const measureKeys=['mWeight','mArmRelax','mArmFlex','mChest','mWaist','mHip','mThigh'];
+$('saveMeasure').onclick=()=>{let keys=['weight','armRelax','armFlex','chest','waist','hip','thigh'],m={date:v('measureDate'),notes:v('mNotes')};keys.forEach((k,i)=>m[k]=v(measureKeys[i]));if(!m.date)return alert('Elegí fecha');let a=measures().filter(x=>x.date!==m.date);a.push(m);a.sort((x,y)=>y.date.localeCompare(x.date));putMeasures(a);renderMeasures();alert('Medición guardada.')};
+function renderMeasures(){let a=measures();$('measureList').innerHTML=a.length?a.map(m=>`<div class="item"><b>${m.date}</b><p>Peso ${m.weight||'—'} · Bíceps ${m.armRelax||'—'}/${m.armFlex||'—'} · Pecho ${m.chest||'—'} · Cintura ${m.waist||'—'} · Cadera ${m.hip||'—'} · Muslos ${m.thigh||'—'}</p></div>`).join(''):'Todavía no hay mediciones nuevas.'}
+async function saveOnePhoto(store,date,type,file){await saveBlob(store,{date,type,blob:await compress(file),name:file.name})}
+$('savePhoto').onclick=async()=>{let f=$('photoInput').files[0];if(!f)return alert('Elegí una foto');await saveOnePhoto('bodyPhotos',v('photoDate'),v('photoType'),f);$('photoInput').value='';renderPhotos();alert('Foto física guardada.')};
+async function gallery(store,target){let a=(await txAll(store)).sort((x,y)=>y.date.localeCompare(x.date));$(target).innerHTML='';for(let p of a){let url=URL.createObjectURL(p.blob),d=document.createElement('div');d.className='photo-card';d.innerHTML=`<img src="${url}"><small>${esc(p.date)} · ${esc(p.type||'Comida')}</small><button>×</button>`;d.querySelector('button').onclick=()=>{if(confirm('¿Eliminar foto?')){let t=db.transaction(store,'readwrite');t.objectStore(store).delete(p.id);t.oncomplete=()=>renderPhotos()}};$(target).append(d)}}
+async function renderPhotos(){await gallery('bodyPhotos','photoGallery');await gallery('mealPhotos','mealGallery')}
+async function photoData(store){let a=await txAll(store),out=[];for(let p of a)out.push({date:p.date,type:p.type||'Comida',name:p.name||'',data:await new Promise(res=>{let r=new FileReader();r.onload=()=>res(r.result);r.readAsDataURL(p.blob)})});return out}
+async function renderProgress(){let ps=await txAll('bodyPhotos'),dates=[...new Set(ps.map(p=>p.date))].sort(),a=$('compareA'),b=$('compareB'),oldA=a.value,oldB=b.value;a.innerHTML=dates.map(d=>`<option>${d}</option>`).join('');b.innerHTML=dates.map(d=>`<option>${d}</option>`).join('');if(dates.includes(oldA))a.value=oldA;if(dates.includes(oldB))b.value=oldB;else if(dates.length)b.value=dates.at(-1);
+const show=()=>{let type=v('compareType'),p=ps.find(x=>x.date===v('compareA')&&x.type===type),q=ps.find(x=>x.date===v('compareB')&&x.type===type);$('compareImgA').src=p?URL.createObjectURL(p.blob):'';$('compareImgB').src=q?URL.createObjectURL(q.blob):'';$('compareLabelA').textContent=p?p.date:'Sin foto';$('compareLabelB').textContent=q?q.date:'Sin foto';$('compareMessage').textContent=dates.length<2?'Cargá fotos en dos fechas distintas.':(!p||!q?'No hay fotos de esa vista en ambas fechas.':'Comparación lado a lado lista.')};['compareA','compareB','compareType'].forEach(id=>$(id).onchange=show);show();
+$('metric').onchange=()=>drawMetric();$('horizon').onchange=()=>drawMetric();drawMetric();
+let ds=days(),withProtein=ds.filter(d=>d.wheyProteinEstimate!==''&&d.wheyProteinEstimate!==undefined),avg=withProtein.length?withProtein.reduce((s,d)=>s+Number(d.wheyProteinEstimate),0)/withProtein.length:0;
+$('daysCount').textContent=ds.length;$('avgProtein').textContent=withProtein.length?avg.toFixed(1):'—';$('creatineCount').textContent=ds.filter(d=>Number(d.creatineScoops)>0).length;$('exerciseCount').textContent=ds.filter(d=>Number(d.pushSets)>0||Number(d.hypoSets)>0||Number(d.ropeSets)>0||d.otherExercise).length}
+function drawMetric(){let key=v('metric'),ms=measures().slice().sort((x,y)=>x.date.localeCompare(y.date)),arr=ms.filter(m=>m[key]!==''&&m[key]!==undefined).map(m=>({date:m.date,val:Number(m[key])}));let labels={waist:'Cintura',armFlex:'Bíceps contraído',armRelax:'Bíceps relajado',chest:'Pecho',hip:'Cadera',thigh:'Muslos',weight:'Peso'};$('chart').innerHTML='';if(!arr.length){$('chartText').textContent='Aún no hay mediciones ingresadas para este indicador.';$('projection').textContent='Todavía no hay datos para proyectar.';return}
+let vals=arr.map(x=>x.val),min=Math.min(...vals),max=Math.max(...vals);if(min===max){min-=1;max+=1}let pts=arr.map((x,i)=>({x:35+(arr.length===1?0:i*530/(arr.length-1)),y:185-(x.val-min)/(max-min)*145}));let svg=`<line x1="30" y1="185" x2="575" y2="185" stroke="#b8c4ba"/>`;svg+=`<polyline fill="none" stroke="#285c43" stroke-width="3" points="${pts.map(p=>p.x+','+p.y).join(' ')}"/>`;pts.forEach((p,i)=>svg+=`<circle cx="${p.x}" cy="${p.y}" r="5" fill="#285c43"/><text x="${p.x}" y="205" font-size="10" text-anchor="middle" fill="#68756d">${esc(arr[i].date.slice(5))}</text><text x="${p.x}" y="${p.y-9}" font-size="11" text-anchor="middle" fill="#18231d">${arr[i].val}</text>`);$('chart').innerHTML=svg;$('chartText').textContent=`${labels[key]}: ${arr.length} medición(es). Primera: ${arr[0].val}; última: ${arr.at(-1).val}.`;
+let box=$('projection');if(arr.length<3){box.textContent='Necesitás al menos 3 mediciones fechadas para una proyección orientativa.';return}
+let daysDiff=(new Date(arr.at(-1).date)-new Date(arr[0].date))/86400000;if(daysDiff<14){box.textContent='Conviene reunir al menos 14 días entre la primera y última medición para reducir el ruido.';return}
+let slope=(arr.at(-1).val-arr[0].val)/daysDiff,h=Number(v('horizon')),project=arr.at(-1).val+slope*h;box.textContent=`Tendencia lineal simple: ${labels[key].toLowerCase()} actual ${arr.at(-1).val} → proyección matemática a ${h} días: ${project.toFixed(1)}. Es una extrapolación de tus datos, no una meta ni una predicción fiable del cuerpo; las medidas fluctúan y la tendencia puede cambiar.`}
+$('exportJson').onclick=async()=>{let obj={app:'Mi recomposición',version:2,exportedAt:new Date().toISOString(),baseline:{date:'2026-11-22',age:26,heightCm:170,lastKnownWeightKg:73,weightDateNote:'medido aproximadamente dos semanas antes del inicio',armRelaxCm:29,armFlexCm:32.5,chestCm:100,waistNavelCm:94,hipCm:89,thighCm:54},days:days(),measures:measures(),bodyPhotos:await photoData('bodyPhotos'),mealPhotos:await photoData('mealPhotos')};download('mi-recomposicion-completo.json',new Blob([JSON.stringify(obj)],{type:'application/json'}))};
+$('exportCsv').onclick=()=>{let a=days(),keys=['date',...fields,'wheyProteinEstimate'],csv=[keys.join(';'),...a.map(o=>keys.map(k=>'"'+String(o[k]??'').replace(/"/g,'""')+'"').join(';'))].join('\n');download('mi-recomposicion-diario.csv',new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}))};
+$('makeSummary').onclick=()=>{$('shareText').value=`SEGUIMIENTO DE RECOMPOSICIÓN\nInicio: 22/11/2026 · 26 años · 1,70 m\nÚltimo peso conocido: 73 kg, medido aprox. dos semanas antes del inicio (sin balanza actualmente; no asumir peso nuevo).\nMedidas iniciales: bíceps 29/32,5 cm; pecho 100 cm; cintura 94 cm; cadera 89 cm; muslos 54 cm.\nWhey: etiqueta 24 g proteína/30 g; la app estima 24 g por scoop como supuesto provisional. Creatina registrada en scoops; gramos por scoop pendientes de confirmar.\n\nREGISTROS:\n${days().map(d=>`${d.date}: agua ${d.water||'—'} L; whey ${d.wheyScoops} scoop(s), ${d.wheyProteinEstimate} g estimados; creatina ${d.creatineScoops} scoop(s); flexiones ${d.pushSets}x${d.pushReps}; hipopresivos ${d.hypoSets}x${d.hypoSecs}s; salto ${d.ropeIntensity} ${d.ropeSets}x${d.ropeMinutes}min.\nComidas: desayuno ${d.breakfast}; almuerzo ${d.lunch}; merienda ${d.snack}; cena ${d.dinner}; extras ${d.extras}; notas ${d.foodNotes}.`).join('\n\n')}\n\nMediciones: ${JSON.stringify(measures(),null,2)}\nLas fotos se incluyen en el JSON completo, no en este resumen de texto.`};
+$('copySummary').onclick=async()=>{if(!$('shareText').value)$('makeSummary').click();try{await navigator.clipboard.writeText($('shareText').value);alert('Resumen copiado')}catch(e){$('shareText').select();document.execCommand('copy')}};
+$('importJson').onclick=async()=>{let f=$('importFile').files[0];if(!f)return alert('Elegí un JSON');try{let x=JSON.parse(await f.text());if(!confirm('Se reemplazarán los registros y mediciones actuales y las fotos guardadas. ¿Continuar?'))return;putDays(x.days||[]);putMeasures(x.measures||[]);for(let store of ['bodyPhotos','mealPhotos']){let t=db.transaction(store,'readwrite');t.objectStore(store).clear();for(let p of x[store]||[]){let blob=await(await fetch(p.data)).blob();t.objectStore(store).add({date:p.date,type:p.type,blob,name:p.name||''})}}alert('Copia restaurada.');renderDays();renderMeasures();renderPhotos()}catch(e){alert('No se pudo importar el archivo.')}};
+openDB().then(()=>{renderDays();renderMeasures();renderPhotos()}).catch(()=>alert('Abrí esta app desde Chrome en Android usando HTTPS para habilitar el almacenamiento.'));
+if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script></body></html>
